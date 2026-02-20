@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeartQuest: The Feelings Adventure</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background: linear-gradient(135deg, #FFD1DC 0%, #B0E0E6 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+        #game-container {
+            width: 800px;
+            height: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .screen.active {
+            display: flex;
+        }
+        h1 {
+            color: #FF6B6B;
+            font-size: 36px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0px #FFF;
+        }
+        h2 {
+            color: #4ECDC4;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 18px;
+            color: #555;
+            text-align: center;
+            line-height: 1.5;
+            max-width: 600px;
+        }
+        input {
+            padding: 15px;
+            font-size: 18px;
+            border: 3px solid #4ECDC4;
+            border-radius: 10px;
+            margin: 10px 0;
+            width: 250px;
+            text-align: center;
+            font-family: inherit;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            font-family: inherit;
+            transition: transform 0.1s, background 0.2s;
+            box-shadow: 0 4px 0 #D64545;
+        }
+        button:hover {
+            background: #FF5252;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 0 0 #D64545;
+        }
+        .hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            background: rgba(255,255,255,0.8);
+            z-index: 10;
+        }
+        .scenario-box {
+            background: #FFF9C4;
+            padding: 20px;
+            border-radius: 15px;
+            border: 4px dashed #FFD54F;
+            margin: 20px 0;
+            width: 90%;
+        }
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 80%;
+        }
+        .choice-btn {
+            background: #4ECDC4;
+            box-shadow: 0 4px 0 #26A69A;
+            width: 100%;
+        }
+        .choice-btn:hover {
+            background: #26A69A;
+        }
+        .feedback {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .correct { color: #4CAF50; background: #E8F5E9; }
+        .wrong { color: #FF9800; background: #FFF3E0; }
+        
+        .emoji-char {
+            font-size: 80px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen active">
+        <h1>❤️ HeartQuest ❤️</h1>
+        <h2>The Feelings Adventure</h2>
+        <div class="emoji-char">🧒💭❤️</div>
+        <p>Help characters understand their feelings! Choose the kindest action and guess how they feel.</p>
+        <input type="text" id="player-name" placeholder="Enter your name">
+        <div id="start-high-score" style="font-size: 20px; color: #FF6B6B; font-weight: bold; margin: 10px;">High Score: 0</div>
+        <button onclick="startGame()">Start Adventure</button>
+        <button onclick="closeGame()" style="background: #95a5a6; box-shadow: 0 4px 0 #7f8c8d;">Close Game</button>
+    </div>
+
+    <!-- Main Game Screen -->
+    <div id="game-screen" class="screen">
+        <div class="hud">
+            <span id="score-display">Score: 0</span>
+            <span id="high-score-display">Best: 0</span>
+        </div>
+        
+        <h2 id="scene-title">Scene 1</h2>
+        <div class="emoji-char" id="scene-emoji">😢</div>
+        
+        <div class="scenario-box">
+            <p id="scenario-text">Loading scenario...</p>
+        </div>
+
+        <div id="choices-area" class="choices-container">
+            <!-- Buttons injected by JS -->
+        </div>
+
+        <div id="feedback-area" class="feedback" style="display: none;"></div>
+        
+        <div id="feeling-area" style="display: none; flex-direction: column; align-items: center; width: 100%;">
+            <h3 id="feeling-question">How do they feel?</h3>
+            <div id="feeling-buttons" style="display: flex; gap: 10px;"></div>
+        </div>
+
+        <button id="continue-btn" style="display: none;" onclick="nextStep()">Continue ➡️</button>
+    </div>
+
+    <!-- Victory Screen -->
+    <div id="victory-screen" class="screen">
+        <h1>Adventure Complete! 🌟</h1>
+        <div class="emoji-char">🎉🏆🎉</div>
+        <p id="final-score">Your Score: 0</p>
+        <p id="final-high-score" style="font-weight: bold; color: #FF6B6B;">High Score: 0</p>
+        <button onclick="restartGame()">Play Again</button>
+        <button onclick="goToMenu()">Main Menu</button>
+        <button onclick="closeGame()" style="background: #95a5a6; box-shadow: 0 4px 0 #7f8c8d;">Close Game</button>
+    </div>
+</div>
+
+<script>
+    // Game State
+    let score = 0;
+    let highScore = 0;
+    let playerName = "Friend";
+    let currentSceneIndex = 0;
+    let currentStep = 'choice'; // 'choice' or 'feeling'
+    let currentChoiceCorrect = false;
+    const gameId = 'heartquest_feelings';
+
+    // Story Data
+    const scenes = [
+        {
+            title: "The Lonely Playground",
+            emoji: "😢",
+            scenario: "Alex is standing alone while other kids play tag. No one invited Alex.",
+            choices: [
+                { text: "Invite Alex to play", correct: true, feedback: "Great job! Including others makes everyone happy." },
+                { text: "Ignore Alex", correct: false, feedback: "Alex might feel sad. It's better to include others." },
+                { text: "Laugh at Alex", correct: false, feedback: "That hurts feelings. Kindness is always better." }
+            ],
+            feelingQuestion: "How do you think Alex feels?",
+            feelings: [
+                { text: "Happy", correct: false },
+                { text: "Lonely", correct: true },
+                { text: "Angry", correct: false }
+            ]
+        },
+        {
+            title: "The Broken Toy",
+            emoji: "😭",
+            scenario: "Sam drops his favorite toy car and it breaks. He starts to cry.",
+            choices: [
+                { text: "Help Sam fix it", correct: true, feedback: "Helping friends when they are sad is very kind." },
+                { text: "Say 'It's just a toy'", correct: false, feedback: "Toys can be special. It's okay to be sad when they break." },
+                { text: "Walk away", correct: false, feedback: "Sam needs a friend right now." }
+            ],
+            feelingQuestion: "How do you think Sam feels?",
+            feelings: [
+                { text: "Excited", correct: false },
+                { text: "Sad", correct: true },
+                { text: "Silly", correct: false }
+            ]
+        },
+        {
+            title: "The Lunch Table",
+            emoji: "🥗",
+            scenario: "Taylor has no one to sit with at lunch. The table is full.",
+            choices: [
+                { text: "Scoot over and make room", correct: true, feedback: "Making space for friends is a wonderful way to show you care." },
+                { text: "Tell Taylor to go away", correct: false, feedback: "That's not kind. Everyone needs a place to sit." },
+                { text: "Pretend not to see Taylor", correct: false, feedback: "Ignoring someone can make them feel invisible." }
+            ],
+            feelingQuestion: "How do you think Taylor feels?",
+            feelings: [
+                { text: "Invisible", correct: true },
+                { text: "Proud", correct: false },
+                { text: "Sleepy", correct: false }
+            ]
+        }
+    ];
+
+    // --- Persistence (LocalStorage) ---
+    
+    // Initialize high score to 0 immediately
+    document.addEventListener('DOMContentLoaded', () => {
+        const highScoreEl = document.getElementById('start-high-score');
+        if (highScoreEl) {
+            highScoreEl.textContent = 'High Score: 0';
+            highScoreEl.style.display = 'block';
+        }
+        loadGameData();
+    });
+
+    function loadGameData() {
+        // Request data from parent (Applaa)
+        window.parent.postMessage({ type: 'applaa-game-load-data', gameId: gameId }, '*');
+        
+        // Listen for response
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'applaa-game-data-loaded') {
+                const data = event.data.data;
+                if (data) {
+                    if (data.highScore) highScore = data.highScore;
+                    if (data.lastPlayerName) {
+                        playerName = data.lastPlayerName;
+                        document.getElementById('player-name').value = playerName;
+                    }
+                    updateHighScoreDisplay();
+                }
+            }
+        });
+    }
+
+    function saveScore() {
+        window.parent.postMessage({
+            type: 'applaa-game-save-score',
+            gameId: gameId,
+            playerName: playerName,
+            score: score
+        }, '*');
+    }
+
+    function updateHighScoreDisplay() {
+        document.getElementById('start-high-score').textContent = 'High Score: ' + highScore;
+        document.getElementById('high-score-display').textContent = 'Best: ' + highScore;
+    }
+
+    // --- Game Logic ---
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame() {
+        const inputName = document.getElementById('player-name').value.trim();
+        if (inputName) playerName = inputName;
+        
+        score = 0;
+        currentSceneIndex = 0;
+        updateScoreDisplay();
+        loadScene();
+        showScreen('game-screen');
+    }
+
+    function loadScene() {
+        if (currentSceneIndex >= scenes.length) {
+            endGame();
+            return;
+        }
+
+        const scene = scenes[currentSceneIndex];
+        currentStep = 'choice';
+
+        document.getElementById('scene-title').textContent = `Scene ${currentSceneIndex + 1}: ${scene.title}`;
+        document.getElementById('scene-emoji').textContent = scene.emoji;
+        document.getElementById('scenario-text').textContent = scene.scenario;
+
+        // Setup Choices
+        const choicesArea = document.getElementById('choices-area');
+        choicesArea.innerHTML = '';
+        choicesArea.style.display = 'flex';
+
+        scene.choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.textContent = choice.text;
+            btn.onclick = () => handleChoice(choice);
+            choicesArea.appendChild(btn);
+        });
+
+        // Reset other areas
+        document.getElementById('feedback-area').style.display = 'none';
+        document.getElementById('feeling-area').style.display = 'none';
+        document.getElementById('continue-btn').style.display = 'none';
+    }
+
+    function handleChoice(choice) {
+        currentChoiceCorrect = choice.correct;
+        
+        const feedbackEl = document.getElementById('feedback-area');
+        feedbackEl.textContent = choice.feedback;
+        feedbackEl.className = 'feedback ' + (choice.correct ? 'correct' : 'wrong');
+        feedbackEl.style.display = 'block';
+
+        if (choice.correct) {
+            score += 50;
+            updateScoreDisplay();
+        }
+
+        document.getElementById('choices-area').style.display = 'none';
+        document.getElementById('continue-btn').style.display = 'block';
+    }
+
+    function nextStep() {
+        if (currentStep === 'choice') {
+            showFeelingQuestion();
+        } else {
+            currentSceneIndex++;
+            loadScene();
+        }
+    }
+
+    function showFeelingQuestion() {
+        currentStep = 'feeling';
+        const scene = scenes[currentSceneIndex];
+        
+        document.getElementById('feedback-area').style.display = 'none';
+        document.getElementById('continue-btn').style.display = 'none';
+
+        const feelingArea = document.getElementById('feeling-area');
+        feelingArea.style.display = 'flex';
+        document.getElementById('feeling-question').textContent = scene.feelingQuestion;
+
+        const btnContainer = document.getElementById('feeling-buttons');
+        btnContainer.innerHTML = '';
+
+        scene.feelings.forEach(feel => {
+            const btn = document.createElement('button');
+            btn.textContent = feel.text;
+            btn.onclick = () => handleFeeling(feel);
+            btnContainer.appendChild(btn);
+        });
+    }
+
+    function handleFeeling(feeling) {
+        const feedbackEl = document.getElementById('feedback-area');
+        
+        if (feeling.correct) {
+            score += 50;
+            feedbackEl.textContent = "Correct! " + feeling.text + " is the right feeling.";
+            feedbackEl.className = 'feedback correct';
+        } else {
+            feedbackEl.textContent = "Not quite. Let's think about it.";
+            feedbackEl.className = 'feedback wrong';
+        }
+        
+        feedbackEl.style.display = 'block';
+        document.getElementById('feeling-area').style.display = 'none';
+        document.getElementById('continue-btn').style.display = 'block';
+        updateScoreDisplay();
+    }
+
+    function updateScoreDisplay() {
+        document.getElementById('score-display').textContent = 'Score: ' + score;
+        if (score > highScore) {
+            highScore = score;
+            updateHighScoreDisplay();
+        }
+    }
+
+    function endGame() {
+        saveScore();
+        showScreen('victory-screen');
+        document.getElementById('final-score').textContent = 'Your Score: ' + score;
+        
+        const isHigh = score >= highScore && score > 0;
+        document.getElementById('final-high-score').textContent = isHigh 
+            ? 'New High Score: ' + score + ' 🎉' 
+            : 'High Score: ' + highScore;
+    }
+
+    function restartGame() {
+        startGame();
+    }
+
+    function goToMenu() {
+        showScreen('start-screen');
+    }
+
+    function closeGame() {
+        // In a real web context, this might close the window or notify parent
+        window.parent.postMessage({ type: 'applaa-game-close' }, '*');
+        alert("Thanks for playing HeartQuest!");
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+{
+  "game": {
+    "name": "HeartQuest: The Feelings Adventure",
+    "type": "2D",
+    "genre": "educational adventure",
+    "description": "An interactive story game for children to learn emotional intelligence and empathy."
+  },
+  "settings": {
+    "window": {"width": 1024, "height": 768},
+    "physics": {"gravity": 0}
+  },
+  "player": {
+    "name": "Player",
+    "type": "UI User"
+  },
+  "mechanics": {
+    "scoring": {
+      "correct_choice": 50,
+      "correct_feeling": 50
+    },
+    "persistence": ["high_score", "player_name", "last_level"]
+  },
+  "levels": [
+    {
+      "id": 1,
+      "title": "The Lonely Playground",
+      "scenario": "Alex is standing alone while other kids play tag. No one invited Alex.",
+      "choices": [
+        {"text": "Invite Alex to play", "correct": true, "feedback": "Great job! Including others makes everyone happy."},
+        {"text": "Ignore Alex", "correct": false, "feedback": "Alex might feel sad. It's better to include others."},
+        {"text": "Laugh at Alex", "correct": false, "feedback": "That hurts feelings. Kindness is always better."}
+      ],
+      "feeling_question": "How do you think Alex feels?",
+      "feelings": [
+        {"text": "Happy", "correct": false},
+        {"text": "Lonely", "correct": true},
+        {"text": "Angry", "correct": false}
+      ]
+    },
+    {
+      "id": 2,
+      "title": "The Broken Toy",
+      "scenario": "Sam drops his favorite toy car and it breaks. He starts to cry.",
+      "choices": [
+        {"text": "Help Sam fix it", "correct": true, "feedback": "Helping friends when they are sad is very kind."},
+        {"text": "Say 'It's just a toy'", "correct": false, "feedback": "Toys can be special. It's okay to be sad when they break."},
+        {"text": "Walk away", "correct": false, "feedback": "Sam needs a friend right now."}
+      ],
+      "feeling_question": "How do you think Sam feels?",
+      "feelings": [
+        {"text": "Excited", "correct": false},
+        {"text": "Sad", "correct": true},
+        {"text": "Silly", "correct": false}
+      ]
+    },
+    {
+      "id": 3,
+      "title": "The Lunch Table",
+      "scenario": "Taylor has no one to sit with at lunch. The table is full.",
+      "choices": [
+        {"text": "Scoot over and make room", "correct": true, "feedback": "Making space for friends is a wonderful way to show you care."},
+        {"text": "Tell Taylor to go away", "correct": false, "feedback": "That's not kind. Everyone needs a place to sit."},
+        {"text": "Pretend not to see Taylor", "correct": false, "feedback": "Ignoring someone can make them feel invisible."}
+      ],
+      "feeling_question": "How do you think Taylor feels?",
+      "feelings": [
+        {"text": "Invisible", "correct": true},
+        {"text": "Proud", "correct": false},
+        {"text": "Sleepy", "correct": false}
+      ]
+    }
+  ]
+}
